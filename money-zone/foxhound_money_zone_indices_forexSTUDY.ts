@@ -65,7 +65,7 @@ prev_ph.SetHiding(!showPreviousHl);
 prev_pl.SetHiding(!showPreviousHl);
 
 AddCloud(if showCloud then prev_val else Double.NaN, if showCloud then prev_vah else Double.NaN, GlobalColor("Cloud"), GlobalColor("Cloud"));
-AddLabel(showLabels, "Money Zone (" + mode + ")", Color.WHITE);
+AddLabel(showLabels, "Money Zone (Market)", Color.WHITE);
 
 # VIRGIN POCS
 
