@@ -7,15 +7,16 @@
 # between Market Profile (TPOProfile) and Volume Profile so that it will
 # function with tickers that have no volume.
 #
-# RECOMMENDED STUDY NAME: foxhound_money_zone_indicies_forex
+# RECOMMENDED STUDY NAME: foxhound_money_zone_indices_forex
 #
+# VERSION 1.1 - LINES NOW EXTEND TO THE RIGHT
 # VERSION 1.0 - INITIAL RELEASE
 
 declare once_per_bar;
 
 input showLabels = yes;
 input showCloud = yes;
-input pricePerRowHeightMode = {AUTOMATIC,default TICKSIZE, CUSTOM};
+input pricePerRowHeightMode = {AUTOMATIC, default TICKSIZE, CUSTOM};
 input customRowHeight = 1.0;
 input timePerProfile = {HOUR, default DAY, WEEK, MONTH, "OPT EXP"};
 input showPreviousHl = yes;
@@ -28,29 +29,28 @@ DefineGlobalColor("VAL", Color.LIGHT_GREEN);
 DefineGlobalColor("PH", Color.DARK_RED);
 DefineGlobalColor("PL", Color.DARK_GREEN);
 
-def pc = TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).POC;
-def vah = TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).VAHigh;
-def val = TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).VALow;
-def ph = TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).ProfileHigh;
-def pl = TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = 
+def pc = if IsNaN(close) then pc[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).POC;
+def vah = if IsNaN(close) then vah[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).VAHigh;
+def val =  if IsNaN(close) then val[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).VALow;
+def ph =  if IsNaN(close) then ph[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).ProfileHigh;
+def pl =  if IsNaN(close) then pl[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = 
 timePerProfile).ProfileLow;
-
 
 def rollover_poc = pc <> pc[1] or val <> val[1] or vah <> vah[1] or ph <> ph[1] or pl <> pl[1];
 
-def ppc = if rollover_poc then pc[1] else if pc[-1] <> pc then double.NaN else ppc[1];
+def ppc = if rollover_poc then pc[1] else if pc[-1] <> pc then Double.NaN else ppc[1];
 plot prev_pc = ppc;
 
-def pval = if rollover_poc then val[1] else if val[-1] <> val then double.NaN else pval[1];
+def pval = if rollover_poc then val[1] else if val[-1] <> val then Double.NaN else pval[1];
 plot prev_val = pval;
 
-def pvah = if rollover_poc then vah[1] else if vah[-1] <> vah then double.NaN else pvah[1];
+def pvah = if rollover_poc then vah[1] else if vah[-1] <> vah then Double.NaN else pvah[1];
 plot prev_vah = pvah;
 
-def ppl = if rollover_poc then pl[1] else if pl[-1] <> pl then double.NaN else ppl[1];
+def ppl = if rollover_poc then pl[1] else if pl[-1] <> pl then Double.NaN else ppl[1];
 plot prev_pl = ppl;
 
-def pph = if rollover_poc then ph[1] else if ph[-1] <> ph then double.NaN else pph[1];
+def pph = if rollover_poc then ph[1] else if ph[-1] <> ph then Double.NaN else pph[1];
 plot prev_ph = pph;
 
 prev_pc.SetDefaultColor(GlobalColor("POC"));
@@ -61,15 +61,15 @@ prev_ph.SetDefaultColor(GlobalColor("PH"));
 prev_pc.SetStyle(Curve.SHORT_DASH);
 prev_val.SetStyle(Curve.SHORT_DASH);
 prev_vah.SetStyle(Curve.SHORT_DASH);
-prev_ph.SetHiding(!ShowPReviousHL);
-prev_pl.SetHiding(!ShowPReviousHL);
+prev_ph.SetHiding(!showPreviousHl);
+prev_pl.SetHiding(!showPreviousHl);
 
-AddCloud(if showCloud then prev_val else double.nan, if showcloud then prev_vah else double.nan, GlobalColor("Cloud"), GlobalColor("Cloud"));
-AddLabel(ShowLabels, "Money Zone (Market)", Color.WHITE);
+AddCloud(if showCloud then prev_val else Double.NaN, if showCloud then prev_vah else Double.NaN, GlobalColor("Cloud"), GlobalColor("Cloud"));
+AddLabel(showLabels, "Money Zone (" + mode + ")", Color.WHITE);
 
 # VIRGIN POCS
 
-def rollover = if ShowVirginPOCs then rollover_poc else 0;
+def rollover = if showVirginPocs then rollover_poc else 0;
 
 def prev_poc_00 = if rollover then pc[1] else prev_poc_00[1];
 def prev_poc_01 = if rollover then prev_poc_00[1] else prev_poc_01[1];
@@ -95,19 +95,17 @@ def flag_08 = if rollover then 0 else if low crosses prev_poc_08 or high crosses
 def flag_09 = if rollover then 0 else if low crosses prev_poc_09 or high crosses prev_poc_09 then 1 else flag_09[1];
 def flag_10 = if rollover then 0 else if low crosses prev_poc_10 or high crosses prev_poc_10 then 1 else flag_10[1];
 
-
-
-def ppoc_00 = if flag_00 then Double.NaN else prev_poc_00;
-def ppoc_01 = if rollover and IsNaN(ppoc_00[1]) then Double.NaN else if rollover then ppoc_00[1] else if flag_01 then Double.NaN else ppoc_01[1];
-def ppoc_02 = if rollover and IsNaN(ppoc_01[1]) then Double.NaN else if rollover then ppoc_01[1] else if flag_02 then double.nan else ppoc_02[1];
-def ppoc_03 = if rollover and IsNaN(ppoc_02[1]) then Double.NaN else if rollover then ppoc_02[1] else if flag_03 then double.nan else ppoc_03[1];
-def ppoc_04 = if rollover and IsNaN(ppoc_03[1]) then Double.NaN else if rollover then ppoc_03[1] else if flag_04 then double.nan else ppoc_04[1];
-def ppoc_05 = if rollover and IsNaN(ppoc_04[1]) then Double.NaN else if rollover then ppoc_04[1] else if flag_05 then double.nan else ppoc_05[1];
-def ppoc_06 = if rollover and IsNaN(ppoc_05[1]) then Double.NaN else if rollover then ppoc_05[1] else if flag_06 then double.nan else ppoc_06[1];
-def ppoc_07 = if rollover and IsNaN(ppoc_06[1]) then Double.NaN else if rollover then ppoc_06[1] else if flag_07 then double.nan else ppoc_07[1];
-def ppoc_08 = if rollover and IsNaN(ppoc_07[1]) then Double.NaN else if rollover then ppoc_07[1] else if flag_08 then double.nan else ppoc_08[1];
-def ppoc_09 = if rollover and IsNaN(ppoc_08[1]) then Double.NaN else if rollover then ppoc_08[1] else if flag_09 then double.nan else ppoc_09[1];
-def ppoc_10 = if rollover and IsNaN(ppoc_09[1]) then Double.NaN else if rollover then ppoc_09[1] else if flag_10 then double.nan else ppoc_10[1];
+def ppoc_00 = if IsNaN(close) then ppoc_00[1] else if flag_00 then Double.NaN else prev_poc_00;
+def ppoc_01 = if IsNaN(close) then ppoc_01[1] else if rollover and IsNaN(ppoc_00[1]) then Double.NaN else if rollover then ppoc_00[1] else if flag_01 then Double.NaN else ppoc_01[1];
+def ppoc_02 = if IsNaN(close) then ppoc_02[1] else if rollover and IsNaN(ppoc_01[1]) then Double.NaN else if rollover then ppoc_01[1] else if flag_02 then Double.NaN else ppoc_02[1];
+def ppoc_03 = if IsNaN(close) then ppoc_03[1] else if rollover and IsNaN(ppoc_02[1]) then Double.NaN else if rollover then ppoc_02[1] else if flag_03 then Double.NaN else ppoc_03[1];
+def ppoc_04 = if IsNaN(close) then ppoc_04[1] else if rollover and IsNaN(ppoc_03[1]) then Double.NaN else if rollover then ppoc_03[1] else if flag_04 then Double.NaN else ppoc_04[1];
+def ppoc_05 = if IsNaN(close) then ppoc_05[1] else if rollover and IsNaN(ppoc_04[1]) then Double.NaN else if rollover then ppoc_04[1] else if flag_05 then Double.NaN else ppoc_05[1];
+def ppoc_06 = if IsNaN(close) then ppoc_06[1] else if rollover and IsNaN(ppoc_05[1]) then Double.NaN else if rollover then ppoc_05[1] else if flag_06 then Double.NaN else ppoc_06[1];
+def ppoc_07 = if IsNaN(close) then ppoc_07[1] else if rollover and IsNaN(ppoc_06[1]) then Double.NaN else if rollover then ppoc_06[1] else if flag_07 then Double.NaN else ppoc_07[1];
+def ppoc_08 = if IsNaN(close) then ppoc_08[1] else if rollover and IsNaN(ppoc_07[1]) then Double.NaN else if rollover then ppoc_07[1] else if flag_08 then Double.NaN else ppoc_08[1];
+def ppoc_09 = if IsNaN(close) then ppoc_09[1] else if rollover and IsNaN(ppoc_08[1]) then Double.NaN else if rollover then ppoc_08[1] else if flag_09 then Double.NaN else ppoc_09[1];
+def ppoc_10 = if IsNaN(close) then ppoc_10[1] else if rollover and IsNaN(ppoc_09[1]) then Double.NaN else if rollover then ppoc_09[1] else if flag_10 then Double.NaN else ppoc_10[1];
 
 plot poc_00 = ppoc_00;
 plot poc_01 = ppoc_01;
@@ -121,7 +119,7 @@ plot poc_08 = ppoc_08;
 plot poc_09 = ppoc_09;
 plot poc_10 = ppoc_10;
 
-plot poc_00d = if isNan(ppoc_00[1]) then ppoc_00 else if ppoc_00 <> ppoc_00[1] then ppoc_00 else Double.NaN;
+plot poc_00d = if IsNaN(ppoc_00[1]) then ppoc_00 else if ppoc_00 <> ppoc_00[1] then ppoc_00 else Double.NaN;
 poc_00d.SetPaintingStrategy(PaintingStrategy.POINTS);
 
 poc_00.SetPaintingStrategy(PaintingStrategy.HORIZONTAL);
@@ -163,6 +161,7 @@ def prev_val_07 = if rollover then prev_val_06[1] else prev_val_07[1];
 def prev_val_08 = if rollover then prev_val_07[1] else prev_val_08[1];
 def prev_val_09 = if rollover then prev_val_08[1] else prev_val_09[1];
 def prev_val_10 = if rollover then prev_val_09[1] else prev_val_10[1];
+
 def flagval_00 = if rollover then 0 else if low crosses prev_val_00 or high crosses prev_val_00 then 1 else flagval_00[1];
 def flagval_01 = if rollover then 0 else if low crosses prev_val_01 or high crosses prev_val_01 then 1 else flagval_01[1];
 def flagval_02 = if rollover then 0 else if low crosses prev_val_02 or high crosses prev_val_02 then 1 else flagval_02[1];
@@ -175,17 +174,17 @@ def flagval_08 = if rollover then 0 else if low crosses prev_val_08 or high cros
 def flagval_09 = if rollover then 0 else if low crosses prev_val_09 or high crosses prev_val_09 then 1 else flagval_09[1];
 def flagval_10 = if rollover then 0 else if low crosses prev_val_10 or high crosses prev_val_10 then 1 else flagval_10[1];
 
-def pval_00 = if flagval_00 then Double.NaN else prev_val_00;
-def pval_01 = if rollover and IsNaN(pval_00[1]) then Double.NaN else if rollover then pval_00[1] else if flagval_01 then Double.NaN else pval_01[1];
-def pval_02 = if rollover and IsNaN(pval_01[1]) then Double.NaN else if rollover then pval_01[1] else if flagval_02 then double.nan else pval_02[1];
-def pval_03 = if rollover and IsNaN(pval_02[1]) then Double.NaN else if rollover then pval_02[1] else if flagval_03 then double.nan else pval_03[1];
-def pval_04 = if rollover and IsNaN(pval_03[1]) then Double.NaN else if rollover then pval_03[1] else if flagval_04 then double.nan else pval_04[1];
-def pval_05 = if rollover and IsNaN(pval_04[1]) then Double.NaN else if rollover then pval_04[1] else if flagval_05 then double.nan else pval_05[1];
-def pval_06 = if rollover and IsNaN(pval_05[1]) then Double.NaN else if rollover then pval_05[1] else if flagval_06 then double.nan else pval_06[1];
-def pval_07 = if rollover and IsNaN(pval_06[1]) then Double.NaN else if rollover then pval_06[1] else if flagval_07 then double.nan else pval_07[1];
-def pval_08 = if rollover and IsNaN(pval_07[1]) then Double.NaN else if rollover then pval_07[1] else if flagval_08 then double.nan else pval_08[1];
-def pval_09 = if rollover and IsNaN(pval_08[1]) then Double.NaN else if rollover then pval_08[1] else if flagval_09 then double.nan else pval_09[1];
-def pval_10 = if rollover and IsNaN(pval_09[1]) then Double.NaN else if rollover then pval_09[1] else if flagval_10 then double.nan else pval_10[1];
+def pval_00 = if IsNaN(close) then pval_00[1] else if flagval_00 then Double.NaN else prev_val_00;
+def pval_01 = if IsNaN(close) then pval_01[1] else if rollover and IsNaN(pval_00[1]) then Double.NaN else if rollover then pval_00[1] else if flagval_01 then Double.NaN else pval_01[1];
+def pval_02 = if IsNaN(close) then pval_02[1] else if rollover and IsNaN(pval_01[1]) then Double.NaN else if rollover then pval_01[1] else if flagval_02 then Double.NaN else pval_02[1];
+def pval_03 = if IsNaN(close) then pval_03[1] else if rollover and IsNaN(pval_02[1]) then Double.NaN else if rollover then pval_02[1] else if flagval_03 then Double.NaN else pval_03[1];
+def pval_04 = if IsNaN(close) then pval_04[1] else if rollover and IsNaN(pval_03[1]) then Double.NaN else if rollover then pval_03[1] else if flagval_04 then Double.NaN else pval_04[1];
+def pval_05 = if IsNaN(close) then pval_05[1] else if rollover and IsNaN(pval_04[1]) then Double.NaN else if rollover then pval_04[1] else if flagval_05 then Double.NaN else pval_05[1];
+def pval_06 = if IsNaN(close) then pval_06[1] else if rollover and IsNaN(pval_05[1]) then Double.NaN else if rollover then pval_05[1] else if flagval_06 then Double.NaN else pval_06[1];
+def pval_07 = if IsNaN(close) then pval_07[1] else if rollover and IsNaN(pval_06[1]) then Double.NaN else if rollover then pval_06[1] else if flagval_07 then Double.NaN else pval_07[1];
+def pval_08 = if IsNaN(close) then pval_08[1] else if rollover and IsNaN(pval_07[1]) then Double.NaN else if rollover then pval_07[1] else if flagval_08 then Double.NaN else pval_08[1];
+def pval_09 = if IsNaN(close) then pval_09[1] else if rollover and IsNaN(pval_08[1]) then Double.NaN else if rollover then pval_08[1] else if flagval_09 then Double.NaN else pval_09[1];
+def pval_10 = if IsNaN(close) then pval_10[1] else if rollover and IsNaN(pval_09[1]) then Double.NaN else if rollover then pval_09[1] else if flagval_10 then Double.NaN else pval_10[1];
 
 plot val_00 = pval_00;
 plot val_01 = pval_01;
@@ -199,7 +198,7 @@ plot val_08 = pval_08;
 plot val_09 = pval_09;
 plot val_10 = pval_10;
 
-plot val_00d = if isNan(val_00[1]) then val_00 else if val_00 <> val_00[1] then val_00 else Double.NaN;
+plot val_00d = if IsNaN(val_00[1]) then val_00 else if val_00 <> val_00[1] then val_00 else Double.NaN;
 val_00d.SetPaintingStrategy(PaintingStrategy.POINTS);
 
 val_00.SetPaintingStrategy(PaintingStrategy.HORIZONTAL);
@@ -253,17 +252,17 @@ def flagvah_08 = if rollover then 0 else if low crosses prev_vah_08 or high cros
 def flagvah_09 = if rollover then 0 else if low crosses prev_vah_09 or high crosses prev_vah_09 then 1 else flagvah_09[1];
 def flagvah_10 = if rollover then 0 else if low crosses prev_vah_10 or high crosses prev_vah_10 then 1 else flagvah_10[1];
 
-def pvah_00 = if flagvah_00 then Double.NaN else prev_vah_00;
-def pvah_01 = if rollover and IsNaN(pvah_00[1]) then Double.NaN else if rollover then pvah_00[1] else if flagvah_01 then Double.NaN else pvah_01[1];
-def pvah_02 = if rollover and IsNaN(pvah_01[1]) then Double.NaN else if rollover then pvah_01[1] else if flagvah_02 then double.nan else pvah_02[1];
-def pvah_03 = if rollover and IsNaN(pvah_02[1]) then Double.NaN else if rollover then pvah_02[1] else if flagvah_03 then double.nan else pvah_03[1];
-def pvah_04 = if rollover and IsNaN(pvah_03[1]) then Double.NaN else if rollover then pvah_03[1] else if flagvah_04 then double.nan else pvah_04[1];
-def pvah_05 = if rollover and IsNaN(pvah_04[1]) then Double.NaN else if rollover then pvah_04[1] else if flagvah_05 then double.nan else pvah_05[1];
-def pvah_06 = if rollover and IsNaN(pvah_05[1]) then Double.NaN else if rollover then pvah_05[1] else if flagvah_06 then double.nan else pvah_06[1];
-def pvah_07 = if rollover and IsNaN(pvah_06[1]) then Double.NaN else if rollover then pvah_06[1] else if flagvah_07 then double.nan else pvah_07[1];
-def pvah_08 = if rollover and IsNaN(pvah_07[1]) then Double.NaN else if rollover then pvah_07[1] else if flagvah_08 then double.nan else pvah_08[1];
-def pvah_09 = if rollover and IsNaN(pvah_08[1]) then Double.NaN else if rollover then pvah_08[1] else if flagvah_09 then double.nan else pvah_09[1];
-def pvah_10 = if rollover and IsNaN(pvah_09[1]) then Double.NaN else if rollover then pvah_09[1] else if flagvah_10 then double.nan else pvah_10[1];
+def pvah_00 = if IsNaN(close) then pvah_00[1] else if flagvah_00 then Double.NaN else prev_vah_00;
+def pvah_01 = if IsNaN(close) then pvah_01[1] else if rollover and IsNaN(pvah_00[1]) then Double.NaN else if rollover then pvah_00[1] else if flagvah_01 then Double.NaN else pvah_01[1];
+def pvah_02 = if IsNaN(close) then pvah_02[1] else if rollover and IsNaN(pvah_01[1]) then Double.NaN else if rollover then pvah_01[1] else if flagvah_02 then Double.NaN else pvah_02[1];
+def pvah_03 = if IsNaN(close) then pvah_03[1] else if rollover and IsNaN(pvah_02[1]) then Double.NaN else if rollover then pvah_02[1] else if flagvah_03 then Double.NaN else pvah_03[1];
+def pvah_04 = if IsNaN(close) then pvah_04[1] else if rollover and IsNaN(pvah_03[1]) then Double.NaN else if rollover then pvah_03[1] else if flagvah_04 then Double.NaN else pvah_04[1];
+def pvah_05 = if IsNaN(close) then pvah_05[1] else if rollover and IsNaN(pvah_04[1]) then Double.NaN else if rollover then pvah_04[1] else if flagvah_05 then Double.NaN else pvah_05[1];
+def pvah_06 = if IsNaN(close) then pvah_06[1] else if rollover and IsNaN(pvah_05[1]) then Double.NaN else if rollover then pvah_05[1] else if flagvah_06 then Double.NaN else pvah_06[1];
+def pvah_07 = if IsNaN(close) then pvah_07[1] else if rollover and IsNaN(pvah_06[1]) then Double.NaN else if rollover then pvah_06[1] else if flagvah_07 then Double.NaN else pvah_07[1];
+def pvah_08 = if IsNaN(close) then pvah_08[1] else if rollover and IsNaN(pvah_07[1]) then Double.NaN else if rollover then pvah_07[1] else if flagvah_08 then Double.NaN else pvah_08[1];
+def pvah_09 = if IsNaN(close) then pvah_09[1] else if rollover and IsNaN(pvah_08[1]) then Double.NaN else if rollover then pvah_08[1] else if flagvah_09 then Double.NaN else pvah_09[1];
+def pvah_10 = if IsNaN(close) then pvah_10[1] else if rollover and IsNaN(pvah_09[1]) then Double.NaN else if rollover then pvah_09[1] else if flagvah_10 then Double.NaN else pvah_10[1];
 
 plot vah_00 = pvah_00;
 plot vah_01 = pvah_01;
@@ -278,7 +277,7 @@ plot vah_09 = pvah_09;
 plot vah_10 = pvah_10;
 
 
-plot vah_00d = if isNan(vah_00[1]) then vah_00 else if vah_00 <> vah_00[1] then vah_00 else Double.NaN;
+plot vah_00d = if IsNaN(vah_00[1]) then vah_00 else if vah_00 <> vah_00[1] then vah_00 else Double.NaN;
 vah_00d.SetPaintingStrategy(PaintingStrategy.POINTS);
 
 
@@ -306,7 +305,3 @@ vah_08.SetDefaultColor(GlobalColor("vah"));
 vah_09.SetDefaultColor(GlobalColor("vah"));
 vah_10.SetDefaultColor(GlobalColor("vah"));
 vah_00d.SetDefaultColor(GlobalColor("vah"));
-
-
-
-
