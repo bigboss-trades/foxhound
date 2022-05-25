@@ -8,6 +8,7 @@
 #
 # RECOMMENDED STUDY NAME: foxhound_money_zone
 #
+# VERSION 1.2 - ADDED MULTIPLIER TO SHOW MULTIPLE DAYS/WEEKS/HOURS/ETC (thanks @Beltaco!)
 # VERSION 1.1 - LINES NOW EXTEND TO THE RIGHT
 # VERSION 1.0 - INITIAL RELEASE
 
@@ -19,6 +20,7 @@ input showCloud = yes;
 input pricePerRowHeightMode = {AUTOMATIC,default TICKSIZE, CUSTOM};
 input customRowHeight = 1.0;
 input timePerProfile = {HOUR, default DAY, WEEK, MONTH, "OPT EXP"};
+input multiplier = 1;
 input showPreviousHl = yes;
 input showVirginPocs = yes;
 
@@ -37,19 +39,19 @@ def ph;
 
 switch (mode){
 case Market:
-    pc = if isNaN(close) then pc[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).POC;
-    vah = if isNaN(close) then vah[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).VAHigh;
-    val =  if isNaN(close) then val[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).VALow;
-    ph =  if isNaN(close) then ph[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).ProfileHigh;
+    pc = if isNaN(close) then pc[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile, multiplier = multiplier).POC;
+    vah = if isNaN(close) then vah[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile, multiplier = multiplier).VAHigh;
+    val =  if isNaN(close) then val[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile, multiplier = multiplier).VALow;
+    ph =  if isNaN(close) then ph[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile, multiplier = multiplier).ProfileHigh;
     pl =  if isNaN(close) then pl[1] else TPOProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = 
-timePerProfile).ProfileLow;
+timePerProfile, multiplier = multiplier).ProfileLow;
 case Volume:
-    pc = if isNaN(close) then pc[1] else reference VolumeProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).POC;
-    vah = if isNaN(close) then vah[1] else reference VolumeProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).VAHigh;
-    val =  if isNaN(close) then val[1] else reference VolumeProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).VALow;
-    ph =  if isNaN(close) then ph[1] else reference VolumeProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile).ProfileHigh;
+    pc = if isNaN(close) then pc[1] else reference VolumeProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile, multiplier = multiplier).POC;
+    vah = if isNaN(close) then vah[1] else reference VolumeProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile, multiplier = multiplier).VAHigh;
+    val =  if isNaN(close) then val[1] else reference VolumeProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile, multiplier = multiplier).VALow;
+    ph =  if isNaN(close) then ph[1] else reference VolumeProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = timePerProfile, multiplier = multiplier).ProfileHigh;
     pl =  if isNaN(close) then pl[1] else reference VolumeProfile(onExpansion = no, pricePerRowHeightMode = pricePerRowHeightMode, timeperprofile = 
-timePerProfile).ProfileLow;
+timePerProfile, multiplier = multiplier).ProfileLow;
 }
 
 
@@ -322,7 +324,3 @@ vah_08.SetDefaultColor(GlobalColor("vah"));
 vah_09.SetDefaultColor(GlobalColor("vah"));
 vah_10.SetDefaultColor(GlobalColor("vah"));
 vah_00d.SetDefaultColor(GlobalColor("vah"));
-
-
-
-
